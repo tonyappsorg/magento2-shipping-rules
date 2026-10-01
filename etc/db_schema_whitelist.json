@@ -1,0 +1,28 @@
+{
+    "tonyapps_shipping_rule": {
+        "column": {
+            "rule_id": true,
+            "name": true,
+            "description": true,
+            "is_active": true,
+            "sort_order": true,
+            "action": true,
+            "applies_to_methods": true,
+            "hide_others": true,
+            "conditions_serialized": true,
+            "actions_serialized": true,
+            "customer_group_ids": true,
+            "store_ids": true,
+            "from_date": true,
+            "to_date": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        },
+        "index": {
+            "TONYAPPS_SHIPPING_RULE_IS_ACTIVE_SORT_ORDER": true
+        }
+    }
+}

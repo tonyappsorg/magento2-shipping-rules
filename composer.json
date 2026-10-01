@@ -1,0 +1,28 @@
+{
+    "name": "tonyapps/module-shippingrules",
+    "description": "Rule-driven shipping method control for Magento 2.4 (hide methods, contact-store carrier, import/export)",
+    "type": "magento2-module",
+    "version": "0.1.0",
+    "license": "proprietary",
+    "require": {
+        "php": ">=8.3",
+        "magento/framework": "*",
+        "magento/module-backend": "*",
+        "magento/module-config": "*",
+        "magento/module-customer": "*",
+        "magento/module-directory": "*",
+        "magento/module-offline-shipping": "*",
+        "magento/module-quote": "*",
+        "magento/module-rule": "*",
+        "magento/module-sales-rule": "*",
+        "magento/module-shipping": "*",
+        "magento/module-store": "*",
+        "magento/module-ui": "*"
+    },
+    "autoload": {
+        "files": ["registration.php"],
+        "psr-4": {
+            "Tonyapps\\ShippingRules\\": ""
+        }
+    }
+}

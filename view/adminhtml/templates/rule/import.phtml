@@ -1,0 +1,51 @@
+<?php
+/**
+ * @var \Tonyapps\ShippingRules\Block\Adminhtml\Rule\Import $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+?>
+<form action="<?= $escaper->escapeUrl($block->getPostUrl()) ?>"
+      method="post"
+      enctype="multipart/form-data"
+      class="admin__fieldset-wrapper">
+    <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($block->getFormKeyValue()) ?>"/>
+    <fieldset class="admin__fieldset">
+        <legend class="admin__legend"><span><?= $escaper->escapeHtml(__('Import Shipping Rules')) ?></span></legend>
+        <br/>
+        <div class="admin__field required">
+            <label class="admin__field-label" for="import_file">
+                <span><?= $escaper->escapeHtml(__('File (JSON or CSV)')) ?></span>
+            </label>
+            <div class="admin__field-control">
+                <input type="file" id="import_file" name="import_file" class="admin__control-file" required/>
+            </div>
+        </div>
+        <div class="admin__field">
+            <label class="admin__field-label" for="format">
+                <span><?= $escaper->escapeHtml(__('Format')) ?></span>
+            </label>
+            <div class="admin__field-control">
+                <select id="format" name="format" class="admin__control-select">
+                    <option value="auto"><?= $escaper->escapeHtml(__('Auto-detect from file extension')) ?></option>
+                    <option value="json">JSON</option>
+                    <option value="csv">CSV</option>
+                </select>
+            </div>
+        </div>
+        <div class="admin__field">
+            <div class="admin__field-note">
+                <span><?= $escaper->escapeHtml(
+                    __('Imported rules are added as new records; existing rules are not modified.')
+                ) ?></span>
+            </div>
+        </div>
+    </fieldset>
+    <div class="page-actions">
+        <button type="submit" class="action-primary" title="<?= $escaper->escapeHtmlAttr(__('Import')) ?>">
+            <span><?= $escaper->escapeHtml(__('Import')) ?></span>
+        </button>
+        <a href="<?= $escaper->escapeUrl($block->getBackUrl()) ?>" class="action-secondary">
+            <span><?= $escaper->escapeHtml(__('Back')) ?></span>
+        </a>
+    </div>
+</form>

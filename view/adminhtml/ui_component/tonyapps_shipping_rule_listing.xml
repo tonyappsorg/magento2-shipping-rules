@@ -1,0 +1,168 @@
+<?xml version="1.0"?>
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">tonyapps_shipping_rule_listing.tonyapps_shipping_rule_listing_data_source</item>
+        </item>
+    </argument>
+    <settings>
+        <spinner>tonyapps_shipping_rule_columns</spinner>
+        <deps>
+            <dep>tonyapps_shipping_rule_listing.tonyapps_shipping_rule_listing_data_source</dep>
+        </deps>
+        <buttons>
+            <button name="add">
+                <url path="*/*/new"/>
+                <class>primary</class>
+                <label translate="true">Add New Rule</label>
+            </button>
+            <button name="import">
+                <url path="*/rule/import"/>
+                <class>secondary</class>
+                <label translate="true">Import</label>
+            </button>
+            <button name="export_json">
+                <url path="*/rule/export">
+                    <param name="format">json</param>
+                </url>
+                <class>secondary</class>
+                <label translate="true">Export JSON</label>
+            </button>
+            <button name="export_csv">
+                <url path="*/rule/export">
+                    <param name="format">csv</param>
+                </url>
+                <class>secondary</class>
+                <label translate="true">Export CSV</label>
+            </button>
+        </buttons>
+    </settings>
+    <dataSource name="tonyapps_shipping_rule_listing_data_source"
+                component="Magento_Ui/js/grid/provider">
+        <settings>
+            <updateUrl path="mui/index/render"/>
+        </settings>
+        <aclResource>Tonyapps_ShippingRules::rules</aclResource>
+        <dataProvider name="tonyapps_shipping_rule_listing_data_source"
+                      class="Magento\Framework\View\Element\UiComponent\DataProvider\DataProvider">
+            <settings>
+                <requestFieldName>id</requestFieldName>
+                <primaryFieldName>rule_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <listingToolbar name="listing_top">
+        <settings>
+            <sticky>true</sticky>
+        </settings>
+        <bookmark name="bookmarks"/>
+        <columnsControls name="columns_controls"/>
+        <filters name="listing_filters"/>
+        <massaction name="listing_massaction">
+            <action name="delete">
+                <settings>
+                    <confirm>
+                        <message translate="true">Are you sure you want to delete the selected rules?</message>
+                        <title translate="true">Delete rules</title>
+                    </confirm>
+                    <url path="tonyapps_shippingrules/rule/massDelete"/>
+                    <type>delete</type>
+                    <label translate="true">Delete</label>
+                </settings>
+            </action>
+            <action name="disable">
+                <settings>
+                    <url path="tonyapps_shippingrules/rule/massStatus">
+                        <param name="status" xsi:type="string">0</param>
+                    </url>
+                    <type>disable</type>
+                    <label translate="true">Disable</label>
+                </settings>
+            </action>
+            <action name="enable">
+                <settings>
+                    <url path="tonyapps_shippingrules/rule/massStatus">
+                        <param name="status" xsi:type="string">1</param>
+                    </url>
+                    <type>enable</type>
+                    <label translate="true">Enable</label>
+                </settings>
+            </action>
+        </massaction>
+        <paging name="listing_paging"/>
+    </listingToolbar>
+    <columns name="tonyapps_shipping_rule_columns">
+        <selectionsColumn name="ids">
+            <settings>
+                <indexField>rule_id</indexField>
+            </settings>
+        </selectionsColumn>
+        <column name="rule_id" sortOrder="10">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">ID</label>
+                <sorting>asc</sorting>
+            </settings>
+        </column>
+        <column name="name" sortOrder="20">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Name</label>
+            </settings>
+        </column>
+        <column name="action" component="Magento_Ui/js/grid/columns/select" sortOrder="30">
+            <settings>
+                <options class="Tonyapps\ShippingRules\Model\Source\Action"/>
+                <filter>select</filter>
+                <dataType>select</dataType>
+                <label translate="true">Action</label>
+            </settings>
+        </column>
+        <column name="is_active" component="Magento_Ui/js/grid/columns/select" sortOrder="40">
+            <settings>
+                <options class="Magento\Config\Model\Config\Source\Yesno"/>
+                <filter>select</filter>
+                <dataType>select</dataType>
+                <label translate="true">Active</label>
+            </settings>
+        </column>
+        <column name="sort_order" sortOrder="50">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">Priority</label>
+            </settings>
+        </column>
+        <column name="from_date" class="Magento\Ui\Component\Listing\Columns\Date"
+                component="Magento_Ui/js/grid/columns/date" sortOrder="60">
+            <settings>
+                <filter>dateRange</filter>
+                <dataType>date</dataType>
+                <label translate="true">Active From</label>
+            </settings>
+        </column>
+        <column name="to_date" class="Magento\Ui\Component\Listing\Columns\Date"
+                component="Magento_Ui/js/grid/columns/date" sortOrder="70">
+            <settings>
+                <filter>dateRange</filter>
+                <dataType>date</dataType>
+                <label translate="true">Active To</label>
+            </settings>
+        </column>
+        <column name="created_at" class="Magento\Ui\Component\Listing\Columns\Date"
+                component="Magento_Ui/js/grid/columns/date" sortOrder="80">
+            <settings>
+                <filter>dateRange</filter>
+                <dataType>date</dataType>
+                <label translate="true">Created</label>
+            </settings>
+        </column>
+        <actionsColumn name="actions" class="Tonyapps\ShippingRules\Ui\Component\Listing\Column\RuleActions" sortOrder="100">
+            <settings>
+                <indexField>rule_id</indexField>
+                <resizeEnabled>false</resizeEnabled>
+                <resizeDefaultWidth>107</resizeDefaultWidth>
+            </settings>
+        </actionsColumn>
+    </columns>
+</listing>

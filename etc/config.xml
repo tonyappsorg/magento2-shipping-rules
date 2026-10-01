@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <carriers>
+            <tonyapps_contactstore>
+                <active>1</active>
+                <sallowspecific>0</sallowspecific>
+                <model>Tonyapps\ShippingRules\Model\Carrier\ContactStore</model>
+                <name>Contact us for a shipping quote</name>
+                <title>Contact store</title>
+                <price>0.00</price>
+                <sort_order>0</sort_order>
+                <specificerrmsg>This shipping method is currently unavailable. Please contact us for a quote.</specificerrmsg>
+            </tonyapps_contactstore>
+        </carriers>
+    </default>
+</config>

@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Tonyapps_ShippingRules::rules"
+             title="Shipping Rules"
+             translate="title"
+             module="Tonyapps_ShippingRules"
+             sortOrder="80"
+             parent="Magento_Backend::stores"
+             action="tonyapps_shippingrules/rule/index"
+             resource="Tonyapps_ShippingRules::rules"/>
+    </menu>
+</config>
