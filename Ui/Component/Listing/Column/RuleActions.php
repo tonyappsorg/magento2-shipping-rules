@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Tonyapps\ShippingRules\Ui\Component\Listing\Column;
 
+use Magento\Framework\Escaper;
 use Magento\Framework\UrlInterface;
 use Magento\Framework\View\Element\UiComponent\ContextInterface;
 use Magento\Framework\View\Element\UiComponentFactory;
@@ -21,6 +22,7 @@ class RuleActions extends Column
         ContextInterface $context,
         UiComponentFactory $uiComponentFactory,
         private readonly UrlInterface $urlBuilder,
+        private readonly Escaper $escaper,
         array $components = [],
         array $data = []
     ) {
@@ -51,7 +53,8 @@ class RuleActions extends Column
                 'href' => $this->urlBuilder->getUrl(self::URL_PATH_DELETE, ['rule_id' => $ruleId]),
                 'label' => __('Delete'),
                 'confirm' => [
-                    'title' => __('Delete "%1"', $item[RuleInterface::NAME] ?? ''),
+                    // The confirm modal renders the title as HTML, and names can come from an imported file.
+                    'title' => __('Delete "%1"', $this->escaper->escapeHtml((string)($item[RuleInterface::NAME] ?? ''))),
                     'message' => __('Are you sure you want to delete this shipping rule?'),
                 ],
                 'post' => true,

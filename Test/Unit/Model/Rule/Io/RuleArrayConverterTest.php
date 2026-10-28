@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Tonyapps\ShippingRules\Test\Unit\Model\Rule\Io;
 
+use Magento\Framework\Exception\LocalizedException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Tonyapps\ShippingRules\Api\Data\RuleInterface;
@@ -130,5 +132,26 @@ class RuleArrayConverterTest extends TestCase
             RuleInterface::STORE_IDS => [1],
             RuleArrayConverter::CONDITIONS_KEY => ['type' => 'combine'],
         ]);
+    }
+
+    public static function invalidRules(): array
+    {
+        return [
+            'no name' => [[RuleInterface::NAME => '  ']],
+            'unknown action' => [[RuleInterface::NAME => 'X', RuleInterface::ACTION => 'delete_everything']],
+            'bad date' => [[RuleInterface::NAME => 'X', RuleInterface::FROM_DATE => '31/12/2026']],
+            'impossible date' => [[RuleInterface::NAME => 'X', RuleInterface::TO_DATE => '2026-02-30']],
+            'non-numeric group' => [[RuleInterface::NAME => 'X', RuleInterface::CUSTOMER_GROUP_IDS => '1,wholesale']],
+            'unreadable conditions' => [[RuleInterface::NAME => 'X', RuleArrayConverter::CONDITIONS_KEY => 'not json']],
+        ];
+    }
+
+    #[DataProvider('invalidRules')]
+    public function testFromArrayRejectsInvalidRulesBeforeBuildingOne(array $data): void
+    {
+        $this->ruleFactory->expects(self::never())->method('create');
+
+        $this->expectException(LocalizedException::class);
+        $this->converter->fromArray($data);
     }
 }

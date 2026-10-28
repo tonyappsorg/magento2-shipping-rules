@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Tonyapps\ShippingRules\Model\Rule\Io;
 
+use Magento\Framework\Exception\LocalizedException;
 use Tonyapps\ShippingRules\Api\Data\RuleInterface;
 use Tonyapps\ShippingRules\Model\Rule;
 use Tonyapps\ShippingRules\Model\RuleFactory;
@@ -67,9 +68,12 @@ class RuleArrayConverter
      * Build an unsaved rule from an array representation.
      *
      * @param array<string, mixed> $data
+     * @throws LocalizedException when the data isn't a usable rule, so a bad file imports nothing
      */
     public function fromArray(array $data): Rule
     {
+        $this->validate($data);
+
         /** @var Rule $rule */
         $rule = $this->ruleFactory->create();
         $rule->setName((string)($data[RuleInterface::NAME] ?? ''));
@@ -90,6 +94,39 @@ class RuleArrayConverter
         }
 
         return $rule;
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     * @throws LocalizedException
+     */
+    private function validate(array $data): void
+    {
+        $name = trim((string)($data[RuleInterface::NAME] ?? ''));
+        if ($name === '') {
+            throw new LocalizedException(__('Every rule needs a name.'));
+        }
+        $action = (string)($data[RuleInterface::ACTION] ?? '');
+        if ($action !== '' && !in_array($action, [RuleInterface::ACTION_HIDE, RuleInterface::ACTION_CONTACT_STORE], true)) {
+            throw new LocalizedException(__('Rule "%1" has an unknown action "%2".', $name, $action));
+        }
+        foreach ([RuleInterface::FROM_DATE, RuleInterface::TO_DATE] as $field) {
+            $date = $this->nullableString($data[$field] ?? null);
+            if ($date !== null && (\DateTime::createFromFormat('!Y-m-d', $date) ?: null)?->format('Y-m-d') !== $date) {
+                throw new LocalizedException(__('Rule "%1" has an invalid %2 "%3"; use YYYY-MM-DD.', $name, $field, $date));
+            }
+        }
+        foreach ([RuleInterface::CUSTOMER_GROUP_IDS, RuleInterface::STORE_IDS] as $field) {
+            foreach ($this->toList($data[$field] ?? []) as $id) {
+                if (!ctype_digit($id)) {
+                    throw new LocalizedException(__('Rule "%1" has a non-numeric %2 "%3".', $name, $field, $id));
+                }
+            }
+        }
+        $conditions = $data[self::CONDITIONS_KEY] ?? null;
+        if ($conditions !== null && $conditions !== '' && $conditions !== [] && !is_array($conditions)) {
+            throw new LocalizedException(__('Rule "%1" has conditions that could not be read.', $name));
+        }
     }
 
     /**

@@ -31,6 +31,10 @@
         <plugin name="tonyapps_shippingrules_hide_methods"
                 type="Tonyapps\ShippingRules\Plugin\Shipping\HideMethodsPlugin" sortOrder="10"/>
     </type>
+    <type name="Magento\Quote\Model\Quote\Config">
+        <plugin name="tonyapps_shippingrules_product_attributes"
+                type="Tonyapps\ShippingRules\Plugin\Quote\ProductAttributesPlugin"/>
+    </type>
     <type name="Tonyapps\ShippingRules\Model\ResourceModel\Rule\Grid\Collection">
         <arguments>
             <argument name="mainTable" xsi:type="string">tonyapps_shipping_rule</argument>

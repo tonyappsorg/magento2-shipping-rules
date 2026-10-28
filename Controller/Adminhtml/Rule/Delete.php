@@ -3,13 +3,14 @@ declare(strict_types=1);
 
 namespace Tonyapps\ShippingRules\Controller\Adminhtml\Rule;
 
-use Magento\Framework\App\Action\HttpGetActionInterface;
+use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Framework\Controller\Result\Redirect;
 
 /**
- * Deletes a single shipping rule. Admin URLs are protected by the admin secret key.
+ * Deletes a single shipping rule. POST only: the grid action and the edit-page button both post, and a delete
+ * shouldn't happen from a followed link.
  */
-class Delete extends AbstractRule implements HttpGetActionInterface
+class Delete extends AbstractRule implements HttpPostActionInterface
 {
     public function execute(): Redirect
     {

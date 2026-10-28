@@ -15,21 +15,22 @@ use Tonyapps\ShippingRules\Model\ResourceModel\Rule\CollectionFactory;
  * Evaluates shipping rules against a rate request.
  *
  * A single evaluation point shared by the hide-methods plugin and the contact-store carrier so
- * both agree on which rules match. Results are memoised per shipping address for the duration of
- * the request (the address is the same object across the carrier and plugin calls).
+ * both agree on which rules match. Results are memoised per rate request: the carrier and the plugin get the same
+ * request object within one collectRates() run, while a later run (changed cart, new address) gets a new one.
  */
 class RuleEvaluator
 {
     /**
-     * @var array<int, Rule[]>
+     * @var \WeakMap<RateRequest, Rule[]>
      */
-    private array $matchedCache = [];
+    private \WeakMap $matchedCache;
 
     public function __construct(
         private readonly CollectionFactory $collectionFactory,
         private readonly TimezoneInterface $localeDate,
         private readonly LoggerInterface $logger
     ) {
+        $this->matchedCache = new \WeakMap();
     }
 
     /**
@@ -46,9 +47,8 @@ class RuleEvaluator
 
         [$quote, $address] = $context;
 
-        $cacheKey = spl_object_id($address);
-        if (isset($this->matchedCache[$cacheKey])) {
-            return $this->matchedCache[$cacheKey];
+        if (isset($this->matchedCache[$request])) {
+            return $this->matchedCache[$request];
         }
 
         $storeId = (int)$quote->getStoreId();
@@ -78,7 +78,7 @@ class RuleEvaluator
             }
         }
 
-        $this->matchedCache[$cacheKey] = $matched;
+        $this->matchedCache[$request] = $matched;
 
         return $matched;
     }

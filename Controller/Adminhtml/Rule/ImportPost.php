@@ -5,6 +5,7 @@ namespace Tonyapps\ShippingRules\Controller\Adminhtml\Rule;
 
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\App\Action\HttpPostActionInterface;
+use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Controller\Result\Redirect;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Filesystem\Driver\File as FileDriver;
@@ -14,7 +15,8 @@ use Tonyapps\ShippingRules\Model\Rule\Io\ImporterPool;
 use Tonyapps\ShippingRules\Model\RuleFactory;
 
 /**
- * Handles the uploaded rule file: parses it and persists each rule as a new record.
+ * Handles the uploaded rule file: parses and validates every rule first, then saves them in one transaction, so a
+ * bad file imports nothing instead of half the rules.
  */
 class ImportPost extends AbstractRule implements HttpPostActionInterface
 {
@@ -26,7 +28,8 @@ class ImportPost extends AbstractRule implements HttpPostActionInterface
         RuleFactory $ruleFactory,
         Registry $coreRegistry,
         private readonly ImporterPool $importerPool,
-        private readonly FileDriver $fileDriver
+        private readonly FileDriver $fileDriver,
+        private readonly ResourceConnection $resourceConnection
     ) {
         parent::__construct($context, $ruleRepository, $ruleFactory, $coreRegistry);
     }
@@ -55,11 +58,18 @@ class ImportPost extends AbstractRule implements HttpPostActionInterface
             $content = $this->fileDriver->fileGetContents($file['tmp_name']);
             $rules = $this->importerPool->get($format)->import($content);
 
-            $imported = 0;
-            foreach ($rules as $rule) {
-                $this->ruleRepository->save($rule);
-                $imported++;
+            $connection = $this->resourceConnection->getConnection();
+            $connection->beginTransaction();
+            try {
+                foreach ($rules as $rule) {
+                    $this->ruleRepository->save($rule);
+                }
+                $connection->commit();
+            } catch (\Exception $exception) {
+                $connection->rollBack();
+                throw $exception;
             }
+            $imported = count($rules);
 
             $this->messageManager->addSuccessMessage(__('%1 shipping rule(s) were imported.', $imported));
 
