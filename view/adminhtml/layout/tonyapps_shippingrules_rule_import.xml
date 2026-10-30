@@ -4,7 +4,7 @@
     <update handle="styles"/>
     <body>
         <referenceContainer name="content">
-            <block class="Tonyapps\ShippingRules\Block\Adminhtml\Rule\Import"
+            <block class="Magento\Backend\Block\Template"
                    name="tonyapps_shippingrules_rule_import"
                    template="Tonyapps_ShippingRules::rule/import.phtml"/>
         </referenceContainer>

@@ -1,14 +1,14 @@
 <?php
 /**
- * @var \Tonyapps\ShippingRules\Block\Adminhtml\Rule\Import $block
+ * @var \Magento\Backend\Block\Template $block
  * @var \Magento\Framework\Escaper $escaper
  */
 ?>
-<form action="<?= $escaper->escapeUrl($block->getPostUrl()) ?>"
+<form action="<?= $escaper->escapeUrl($block->getUrl('tonyapps_shippingrules/rule/importPost')) ?>"
       method="post"
       enctype="multipart/form-data"
       class="admin__fieldset-wrapper">
-    <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($block->getFormKeyValue()) ?>"/>
+    <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($block->getFormKey()) ?>"/>
     <fieldset class="admin__fieldset">
         <legend class="admin__legend"><span><?= $escaper->escapeHtml(__('Import Shipping Rules')) ?></span></legend>
         <br/>
@@ -44,7 +44,7 @@
         <button type="submit" class="action-primary" title="<?= $escaper->escapeHtmlAttr(__('Import')) ?>">
             <span><?= $escaper->escapeHtml(__('Import')) ?></span>
         </button>
-        <a href="<?= $escaper->escapeUrl($block->getBackUrl()) ?>" class="action-secondary">
+        <a href="<?= $escaper->escapeUrl($block->getUrl('tonyapps_shippingrules/rule/index')) ?>" class="action-secondary">
             <span><?= $escaper->escapeHtml(__('Back')) ?></span>
         </a>
     </div>
