@@ -43,15 +43,6 @@ class RuleTest extends TestCase
         );
     }
 
-    public function testRuleIdIsNullUntilSet(): void
-    {
-        self::assertNull($this->rule->getRuleId());
-
-        $this->rule->setRuleId(42);
-
-        self::assertSame(42, $this->rule->getRuleId());
-    }
-
     public function testNameRoundTrips(): void
     {
         $this->rule->setName('Hide freight to embargoed countries');
@@ -161,15 +152,6 @@ class RuleTest extends TestCase
         $this->rule->setToDate(null);
 
         self::assertNull($this->rule->getToDate());
-    }
-
-    public function testCreatedAtAndUpdatedAtAreReadOnlyGetters(): void
-    {
-        $this->rule->setData(RuleInterface::CREATED_AT, '2026-09-01 00:00:00');
-        $this->rule->setData(RuleInterface::UPDATED_AT, '2026-09-02 00:00:00');
-
-        self::assertSame('2026-09-01 00:00:00', $this->rule->getCreatedAt());
-        self::assertSame('2026-09-02 00:00:00', $this->rule->getUpdatedAt());
     }
 
     public function testBeforeSaveFlattensListFieldsSetAsRawArrays(): void

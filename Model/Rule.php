@@ -104,18 +104,6 @@ class Rule extends \Magento\Rule\Model\AbstractModel implements RuleInterface
         return $this;
     }
 
-    public function getRuleId(): ?int
-    {
-        $id = $this->getData(self::RULE_ID);
-
-        return $id === null ? null : (int)$id;
-    }
-
-    public function setRuleId(int $ruleId): RuleInterface
-    {
-        return $this->setData(self::RULE_ID, $ruleId);
-    }
-
     public function getName(): ?string
     {
         $name = $this->getData(self::NAME);
@@ -172,7 +160,7 @@ class Rule extends \Magento\Rule\Model\AbstractModel implements RuleInterface
 
     public function getAppliesToMethods(): array
     {
-        return $this->explodeList($this->getData(self::APPLIES_TO_METHODS));
+        return self::normalizeList($this->getData(self::APPLIES_TO_METHODS));
     }
 
     public function setAppliesToMethods(array $methods): RuleInterface
@@ -192,7 +180,7 @@ class Rule extends \Magento\Rule\Model\AbstractModel implements RuleInterface
 
     public function getCustomerGroupIds(): array
     {
-        return array_map('intval', $this->explodeList($this->getData(self::CUSTOMER_GROUP_IDS)));
+        return array_map('intval', self::normalizeList($this->getData(self::CUSTOMER_GROUP_IDS)));
     }
 
     public function setCustomerGroupIds(array $groupIds): RuleInterface
@@ -202,7 +190,7 @@ class Rule extends \Magento\Rule\Model\AbstractModel implements RuleInterface
 
     public function getStoreIds(): array
     {
-        return array_map('intval', $this->explodeList($this->getData(self::STORE_IDS)));
+        return array_map('intval', self::normalizeList($this->getData(self::STORE_IDS)));
     }
 
     public function setStoreIds(array $storeIds): RuleInterface
@@ -234,31 +222,20 @@ class Rule extends \Magento\Rule\Model\AbstractModel implements RuleInterface
         return $this->setData(self::TO_DATE, $toDate);
     }
 
-    public function getCreatedAt(): ?string
-    {
-        $value = $this->getData(self::CREATED_AT);
-
-        return $value === null ? null : (string)$value;
-    }
-
-    public function getUpdatedAt(): ?string
-    {
-        $value = $this->getData(self::UPDATED_AT);
-
-        return $value === null ? null : (string)$value;
-    }
-
     /**
      * Split a comma-separated string (or pass through an array) into a clean list of values.
      *
      * @param mixed $value
      * @return string[]
      */
-    private function explodeList($value): array
+    public static function normalizeList(mixed $value): array
     {
         if (is_array($value)) {
             return array_values(
-                array_filter($value, static fn($item): bool => $item !== '' && $item !== null)
+                array_filter(
+                    array_map(static fn($item): string => trim((string)$item), $value),
+                    static fn(string $item): bool => $item !== ''
+                )
             );
         }
 

@@ -5,14 +5,11 @@ namespace Tonyapps\ShippingRules\Block\Adminhtml\Rule;
 
 use Magento\Backend\Block\Widget\Context;
 use Magento\Backend\Block\Widget\Form\Container;
-use Magento\Framework\Registry;
-use Tonyapps\ShippingRules\Controller\Adminhtml\Rule\AbstractRule;
 
 class Edit extends Container
 {
     public function __construct(
         Context $context,
-        private readonly Registry $coreRegistry,
         array $data = []
     ) {
         parent::__construct($context, $data);
@@ -40,13 +37,4 @@ class Edit extends Container
         );
     }
 
-    public function getHeaderText()
-    {
-        $rule = $this->coreRegistry->registry(AbstractRule::REGISTRY_KEY);
-        if ($rule && $rule->getId()) {
-            return __('Edit Rule "%1"', $this->escapeHtml((string)$rule->getName()));
-        }
-
-        return __('New Shipping Rule');
-    }
 }

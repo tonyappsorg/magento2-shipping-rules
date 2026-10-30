@@ -8,7 +8,7 @@ use Magento\Framework\Exception\LocalizedException;
 /**
  * Imports rules from the JSON format produced by {@see JsonExporter}.
  */
-class JsonImporter implements ImporterInterface
+class JsonImporter
 {
     public function __construct(
         private readonly RuleArrayConverter $converter

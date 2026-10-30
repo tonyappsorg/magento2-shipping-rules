@@ -13,21 +13,13 @@ interface RuleInterface
     public const string ACTION = 'action';
     public const string APPLIES_TO_METHODS = 'applies_to_methods';
     public const string HIDE_OTHERS = 'hide_others';
-    public const string CONDITIONS_SERIALIZED = 'conditions_serialized';
-    public const string ACTIONS_SERIALIZED = 'actions_serialized';
     public const string CUSTOMER_GROUP_IDS = 'customer_group_ids';
     public const string STORE_IDS = 'store_ids';
     public const string FROM_DATE = 'from_date';
     public const string TO_DATE = 'to_date';
-    public const string CREATED_AT = 'created_at';
-    public const string UPDATED_AT = 'updated_at';
 
     public const string ACTION_HIDE = 'hide';
     public const string ACTION_CONTACT_STORE = 'contact_store';
-
-    public function getRuleId(): ?int;
-
-    public function setRuleId(int $ruleId): self;
 
     public function getName(): ?string;
 
@@ -73,7 +65,4 @@ interface RuleInterface
 
     public function setToDate(?string $toDate): self;
 
-    public function getCreatedAt(): ?string;
-
-    public function getUpdatedAt(): ?string;
 }

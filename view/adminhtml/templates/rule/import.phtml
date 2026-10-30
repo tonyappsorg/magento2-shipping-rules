@@ -21,18 +21,6 @@
             </div>
         </div>
         <div class="admin__field">
-            <label class="admin__field-label" for="format">
-                <span><?= $escaper->escapeHtml(__('Format')) ?></span>
-            </label>
-            <div class="admin__field-control">
-                <select id="format" name="format" class="admin__control-select">
-                    <option value="auto"><?= $escaper->escapeHtml(__('Auto-detect from file extension')) ?></option>
-                    <option value="json">JSON</option>
-                    <option value="csv">CSV</option>
-                </select>
-            </div>
-        </div>
-        <div class="admin__field">
             <div class="admin__field-note">
                 <span><?= $escaper->escapeHtml(
                     __('Imported rules are added as new records; existing rules are not modified.')

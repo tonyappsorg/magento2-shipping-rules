@@ -3,18 +3,12 @@ declare(strict_types=1);
 
 namespace Tonyapps\ShippingRules\Test\Unit\Model;
 
-use Magento\Framework\Api\SearchCriteria\CollectionProcessorInterface;
-use Magento\Framework\Api\SearchCriteriaInterface;
-use Magento\Framework\Api\SearchResultsInterface;
-use Magento\Framework\Api\SearchResultsInterfaceFactory;
 use Magento\Framework\Exception\CouldNotDeleteException;
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Tonyapps\ShippingRules\Model\ResourceModel\Rule as RuleResource;
-use Tonyapps\ShippingRules\Model\ResourceModel\Rule\Collection;
-use Tonyapps\ShippingRules\Model\ResourceModel\Rule\CollectionFactory;
 use Tonyapps\ShippingRules\Model\Rule;
 use Tonyapps\ShippingRules\Model\RuleFactory;
 use Tonyapps\ShippingRules\Model\RuleRepository;
@@ -23,25 +17,16 @@ class RuleRepositoryTest extends TestCase
 {
     private RuleResource&MockObject $resource;
     private RuleFactory&MockObject $ruleFactory;
-    private CollectionFactory&MockObject $collectionFactory;
-    private SearchResultsInterfaceFactory&MockObject $searchResultsFactory;
-    private CollectionProcessorInterface&MockObject $collectionProcessor;
     private RuleRepository $repository;
 
     protected function setUp(): void
     {
         $this->resource = $this->createMock(RuleResource::class);
         $this->ruleFactory = $this->createMock(RuleFactory::class);
-        $this->collectionFactory = $this->createMock(CollectionFactory::class);
-        $this->searchResultsFactory = $this->createMock(SearchResultsInterfaceFactory::class);
-        $this->collectionProcessor = $this->createMock(CollectionProcessorInterface::class);
 
         $this->repository = new RuleRepository(
             $this->resource,
-            $this->ruleFactory,
-            $this->collectionFactory,
-            $this->searchResultsFactory,
-            $this->collectionProcessor
+            $this->ruleFactory
         );
     }
 
@@ -112,24 +97,4 @@ class RuleRepositoryTest extends TestCase
         self::assertTrue($this->repository->deleteById(3));
     }
 
-    public function testGetListBuildsSearchResultsFromCollection(): void
-    {
-        $searchCriteria = $this->createMock(SearchCriteriaInterface::class);
-        $collection = $this->createMock(Collection::class);
-        $this->collectionFactory->method('create')->willReturn($collection);
-
-        $this->collectionProcessor->expects(self::once())->method('process')->with($searchCriteria, $collection);
-
-        $items = [$this->createMock(Rule::class)];
-        $collection->method('getItems')->willReturn($items);
-        $collection->method('getSize')->willReturn(1);
-
-        $searchResults = $this->createMock(SearchResultsInterface::class);
-        $searchResults->expects(self::once())->method('setSearchCriteria')->with($searchCriteria);
-        $searchResults->expects(self::once())->method('setItems')->with($items);
-        $searchResults->expects(self::once())->method('setTotalCount')->with(1);
-        $this->searchResultsFactory->method('create')->willReturn($searchResults);
-
-        self::assertSame($searchResults, $this->repository->getList($searchCriteria));
-    }
 }

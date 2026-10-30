@@ -14,7 +14,8 @@ use Magento\Framework\Registry;
 use Tonyapps\ShippingRules\Api\Data\RuleInterface;
 use Tonyapps\ShippingRules\Api\RuleRepositoryInterface;
 use Tonyapps\ShippingRules\Model\ResourceModel\Rule\CollectionFactory;
-use Tonyapps\ShippingRules\Model\Rule\Io\ExporterPool;
+use Tonyapps\ShippingRules\Model\Rule\Io\CsvExporter;
+use Tonyapps\ShippingRules\Model\Rule\Io\JsonExporter;
 use Tonyapps\ShippingRules\Model\RuleFactory;
 
 /**
@@ -28,7 +29,8 @@ class Export extends AbstractRule implements HttpGetActionInterface
         RuleFactory $ruleFactory,
         Registry $coreRegistry,
         private readonly CollectionFactory $collectionFactory,
-        private readonly ExporterPool $exporterPool,
+        private readonly JsonExporter $jsonExporter,
+        private readonly CsvExporter $csvExporter,
         private readonly FileFactory $fileFactory
     ) {
         parent::__construct($context, $ruleRepository, $ruleFactory, $coreRegistry);
@@ -42,7 +44,11 @@ class Export extends AbstractRule implements HttpGetActionInterface
         $format = (string)$this->getRequest()->getParam('format', 'json');
 
         try {
-            $exporter = $this->exporterPool->get($format);
+            $exporter = match (strtolower($format)) {
+                'json' => $this->jsonExporter,
+                'csv' => $this->csvExporter,
+                default => throw new LocalizedException(__('Unsupported export format "%1".', $format)),
+            };
         } catch (LocalizedException $exception) {
             $this->messageManager->addErrorMessage($exception->getMessage());
 

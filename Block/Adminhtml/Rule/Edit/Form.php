@@ -235,7 +235,7 @@ class Form extends Generic
 
         foreach ([RuleInterface::APPLIES_TO_METHODS, RuleInterface::CUSTOMER_GROUP_IDS, RuleInterface::STORE_IDS] as $field) {
             if (isset($data[$field]) && is_string($data[$field])) {
-                $data[$field] = $data[$field] === '' ? [] : explode(',', $data[$field]);
+                $data[$field] = Rule::normalizeList($data[$field]);
             }
         }
 

@@ -17,23 +17,6 @@ use Tonyapps\ShippingRules\Model\RuleFactory;
 class RuleArrayConverter
 {
     /**
-     * Field order used by the array/CSV representation.
-     */
-    public const FIELDS = [
-        RuleInterface::NAME,
-        RuleInterface::DESCRIPTION,
-        RuleInterface::IS_ACTIVE,
-        RuleInterface::SORT_ORDER,
-        RuleInterface::ACTION,
-        RuleInterface::APPLIES_TO_METHODS,
-        RuleInterface::HIDE_OTHERS,
-        RuleInterface::CUSTOMER_GROUP_IDS,
-        RuleInterface::STORE_IDS,
-        RuleInterface::FROM_DATE,
-        RuleInterface::TO_DATE,
-    ];
-
-    /**
      * Key holding the serialized condition tree in the array/CSV representation.
      */
     public const CONDITIONS_KEY = 'conditions';
@@ -81,10 +64,10 @@ class RuleArrayConverter
         $rule->setIsActive((bool)($data[RuleInterface::IS_ACTIVE] ?? true));
         $rule->setSortOrder((int)($data[RuleInterface::SORT_ORDER] ?? 0));
         $rule->setAction((string)($data[RuleInterface::ACTION] ?? RuleInterface::ACTION_HIDE));
-        $rule->setAppliesToMethods($this->toList($data[RuleInterface::APPLIES_TO_METHODS] ?? []));
+        $rule->setAppliesToMethods(Rule::normalizeList($data[RuleInterface::APPLIES_TO_METHODS] ?? []));
         $rule->setHideOthers((bool)($data[RuleInterface::HIDE_OTHERS] ?? false));
-        $rule->setCustomerGroupIds(array_map('intval', $this->toList($data[RuleInterface::CUSTOMER_GROUP_IDS] ?? [])));
-        $rule->setStoreIds(array_map('intval', $this->toList($data[RuleInterface::STORE_IDS] ?? [])));
+        $rule->setCustomerGroupIds(array_map('intval', Rule::normalizeList($data[RuleInterface::CUSTOMER_GROUP_IDS] ?? [])));
+        $rule->setStoreIds(array_map('intval', Rule::normalizeList($data[RuleInterface::STORE_IDS] ?? [])));
         $rule->setFromDate($this->nullableString($data[RuleInterface::FROM_DATE] ?? null));
         $rule->setToDate($this->nullableString($data[RuleInterface::TO_DATE] ?? null));
 
@@ -117,7 +100,7 @@ class RuleArrayConverter
             }
         }
         foreach ([RuleInterface::CUSTOMER_GROUP_IDS, RuleInterface::STORE_IDS] as $field) {
-            foreach ($this->toList($data[$field] ?? []) as $id) {
+            foreach (Rule::normalizeList($data[$field] ?? []) as $id) {
                 if (!ctype_digit($id)) {
                     throw new LocalizedException(__('Rule "%1" has a non-numeric %2 "%3".', $name, $field, $id));
                 }
@@ -127,35 +110,6 @@ class RuleArrayConverter
         if ($conditions !== null && $conditions !== '' && $conditions !== [] && !is_array($conditions)) {
             throw new LocalizedException(__('Rule "%1" has conditions that could not be read.', $name));
         }
-    }
-
-    /**
-     * Normalise a value that may be an array or a comma-separated string into a list of strings.
-     *
-     * @param mixed $value
-     * @return string[]
-     */
-    private function toList($value): array
-    {
-        if (is_array($value)) {
-            return array_values(
-                array_filter(
-                    array_map(static fn($item): string => trim((string)$item), $value),
-                    static fn(string $item): bool => $item !== ''
-                )
-            );
-        }
-
-        if ($value === null || $value === '') {
-            return [];
-        }
-
-        return array_values(
-            array_filter(
-                array_map('trim', explode(',', (string)$value)),
-                static fn(string $item): bool => $item !== ''
-            )
-        );
     }
 
     /**

@@ -19,15 +19,15 @@ with admin CRUD, grid, and JSON/CSV import/export. No git repo, no TODOs/FIXMEs 
 - **Admin CRUD**: grid (UI component, mass delete/enable/disable), edit/new form (fieldsets
   General/Action/Scope + natywny condition builder + AJAX `NewConditionHtml`), delete, save
   z poprawną normalizacją multiselectów i pustych dat.
-- **Import/Export**: `ExporterPool`/`ImporterPool` (DI-konfigurowane), JSON (domyślny,
-  zachowuje strukturę warunków 1:1) i CSV (warunki jako zagnieżdżony JSON w komórce). Auto-detekcja
-  formatu po rozszerzeniu pliku.
+- **Import/Export**: bezpośredni wybór eksportera/importera JSON lub CSV. JSON (domyślny,
+  zachowuje strukturę warunków 1:1) i CSV (warunki jako zagnieżdżony JSON w komórce). Format importu
+  wynika z rozszerzenia pliku.
 - **ACL/menu/routing**: kompletne — jeden resource na grid (`::rules`).
 - **i18n**: `en_US.csv` pokrywa wszystkie stringi z kontrolerów/bloków oraz etykiety z
   `system.xml`.
-- **Testy jednostkowe**: `RuleEvaluator`, `HideMethodsPlugin`, `ExporterPool`, `ImporterPool`,
+- **Testy jednostkowe**: `RuleEvaluator`, `HideMethodsPlugin`,
   `Action` source, `Rule`, `RuleRepository`, `RuleArrayConverter`, `CsvExporter`, `CsvImporter`,
-  `JsonExporter`, `JsonImporter` — 82 testy, wszystkie zielone (potwierdzone przez uruchomienie
+  `JsonExporter`, `JsonImporter` — 59 testów, wszystkie przechodzą (potwierdzone przez uruchomienie
   na prawdziwym `dev/tests/unit` z pełnym Magento, PHP 8.4.24).
 
 ## Problemy / ryzyka

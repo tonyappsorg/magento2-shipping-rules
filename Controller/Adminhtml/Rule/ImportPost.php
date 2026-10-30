@@ -11,7 +11,8 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Filesystem\Driver\File as FileDriver;
 use Magento\Framework\Registry;
 use Tonyapps\ShippingRules\Api\RuleRepositoryInterface;
-use Tonyapps\ShippingRules\Model\Rule\Io\ImporterPool;
+use Tonyapps\ShippingRules\Model\Rule\Io\CsvImporter;
+use Tonyapps\ShippingRules\Model\Rule\Io\JsonImporter;
 use Tonyapps\ShippingRules\Model\RuleFactory;
 
 /**
@@ -20,14 +21,13 @@ use Tonyapps\ShippingRules\Model\RuleFactory;
  */
 class ImportPost extends AbstractRule implements HttpPostActionInterface
 {
-    private const SUPPORTED_FORMATS = ['auto', 'json', 'csv'];
-
     public function __construct(
         Context $context,
         RuleRepositoryInterface $ruleRepository,
         RuleFactory $ruleFactory,
         Registry $coreRegistry,
-        private readonly ImporterPool $importerPool,
+        private readonly JsonImporter $jsonImporter,
+        private readonly CsvImporter $csvImporter,
         private readonly FileDriver $fileDriver,
         private readonly ResourceConnection $resourceConnection
     ) {
@@ -47,16 +47,11 @@ class ImportPost extends AbstractRule implements HttpPostActionInterface
         }
 
         try {
-            $format = (string)$this->getRequest()->getParam('format', 'auto');
-            if (!in_array($format, self::SUPPORTED_FORMATS, true)) {
-                $format = 'auto';
-            }
-            if ($format === 'auto') {
-                $format = $this->importerPool->detectFormat((string)($file['name'] ?? ''));
-            }
+            $format = strtolower(pathinfo((string)($file['name'] ?? ''), PATHINFO_EXTENSION));
+            $importer = $format === 'csv' ? $this->csvImporter : $this->jsonImporter;
 
             $content = $this->fileDriver->fileGetContents($file['tmp_name']);
-            $rules = $this->importerPool->get($format)->import($content);
+            $rules = $importer->import($content);
 
             $connection = $this->resourceConnection->getConnection();
             $connection->beginTransaction();

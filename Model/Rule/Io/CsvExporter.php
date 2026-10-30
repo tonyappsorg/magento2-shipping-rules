@@ -11,7 +11,7 @@ use Tonyapps\ShippingRules\Api\Data\RuleInterface;
  * List columns (methods/groups/stores) are comma-joined inside a quoted cell; the nested condition
  * tree cannot be flattened losslessly, so it is embedded as a JSON string in the "conditions" cell.
  */
-class CsvExporter implements ExporterInterface
+class CsvExporter
 {
     /**
      * CSV header row (order matters for the importer).

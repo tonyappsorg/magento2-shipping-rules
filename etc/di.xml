@@ -6,27 +6,6 @@
                 type="Tonyapps\ShippingRules\Model\Rule"/>
     <preference for="Tonyapps\ShippingRules\Api\RuleRepositoryInterface"
                 type="Tonyapps\ShippingRules\Model\RuleRepository"/>
-    <preference for="Tonyapps\ShippingRules\Model\Rule\Io\ExporterInterface"
-                type="Tonyapps\ShippingRules\Model\Rule\Io\JsonExporter"/>
-    <preference for="Tonyapps\ShippingRules\Model\Rule\Io\ImporterInterface"
-                type="Tonyapps\ShippingRules\Model\Rule\Io\JsonImporter"/>
-
-    <type name="Tonyapps\ShippingRules\Model\Rule\Io\ExporterPool">
-        <arguments>
-            <argument name="exporters" xsi:type="array">
-                <item name="json" xsi:type="object">Tonyapps\ShippingRules\Model\Rule\Io\JsonExporter</item>
-                <item name="csv" xsi:type="object">Tonyapps\ShippingRules\Model\Rule\Io\CsvExporter</item>
-            </argument>
-        </arguments>
-    </type>
-    <type name="Tonyapps\ShippingRules\Model\Rule\Io\ImporterPool">
-        <arguments>
-            <argument name="importers" xsi:type="array">
-                <item name="json" xsi:type="object">Tonyapps\ShippingRules\Model\Rule\Io\JsonImporter</item>
-                <item name="csv" xsi:type="object">Tonyapps\ShippingRules\Model\Rule\Io\CsvImporter</item>
-            </argument>
-        </arguments>
-    </type>
     <type name="Magento\Shipping\Model\Shipping">
         <plugin name="tonyapps_shippingrules_hide_methods"
                 type="Tonyapps\ShippingRules\Plugin\Shipping\HideMethodsPlugin" sortOrder="10"/>

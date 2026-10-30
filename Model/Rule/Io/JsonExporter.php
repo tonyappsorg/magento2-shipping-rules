@@ -6,7 +6,7 @@ namespace Tonyapps\ShippingRules\Model\Rule\Io;
 /**
  * Exports rules as a pretty-printed JSON array (faithful to nested conditions).
  */
-class JsonExporter implements ExporterInterface
+class JsonExporter
 {
     public function __construct(
         private readonly RuleArrayConverter $converter

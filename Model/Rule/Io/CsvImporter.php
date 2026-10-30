@@ -5,11 +5,12 @@ namespace Tonyapps\ShippingRules\Model\Rule\Io;
 
 use Magento\Framework\Exception\LocalizedException;
 use Tonyapps\ShippingRules\Api\Data\RuleInterface;
+use Tonyapps\ShippingRules\Model\Rule;
 
 /**
  * Imports rules from the CSV format produced by {@see CsvExporter}.
  */
-readonly class CsvImporter implements ImporterInterface
+readonly class CsvImporter
 {
     public function __construct(
         private RuleArrayConverter $converter
@@ -48,7 +49,7 @@ readonly class CsvImporter implements ImporterInterface
                 if ($field === RuleArrayConverter::CONDITIONS_KEY) {
                     $data[$field] = $this->decodeConditions((string)$value);
                 } elseif (in_array($field, $listFields, true)) {
-                    $data[$field] = $value === '' ? [] : explode(',', (string)$value);
+                    $data[$field] = Rule::normalizeList($value);
                 } else {
                     $data[$field] = $value;
                 }

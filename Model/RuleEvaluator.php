@@ -57,7 +57,7 @@ class RuleEvaluator
 
         $matched = [];
         /** @var Rule $rule */
-        foreach ($this->loadActiveRules() as $rule) {
+        foreach ($this->collectionFactory->create()->addActiveFilter() as $rule) {
             if (!$this->matchesScope($rule, $storeId, $customerGroupId, $today)) {
                 continue;
             }
@@ -109,17 +109,6 @@ class RuleEvaluator
         }
 
         return true;
-    }
-
-    /**
-     * Load active rules ordered by sort order (cached collection factory yields fresh models,
-     * but the small per-address memoisation above prevents repeated condition validation).
-     *
-     * @return \Tonyapps\ShippingRules\Model\ResourceModel\Rule\Collection
-     */
-    private function loadActiveRules()
-    {
-        return $this->collectionFactory->create()->addActiveFilter();
     }
 
     /**
