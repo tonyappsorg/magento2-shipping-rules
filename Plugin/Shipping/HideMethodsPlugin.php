@@ -5,6 +5,7 @@ namespace Tonyapps\ShippingRules\Plugin\Shipping;
 
 use Magento\Quote\Model\Quote\Address\RateRequest;
 use Magento\Quote\Model\Quote\Address\RateResult\AbstractResult;
+use Magento\Quote\Model\Quote\Address\RateResult\Error;
 use Magento\Shipping\Model\Shipping;
 use Tonyapps\ShippingRules\Api\Data\RuleInterface;
 use Tonyapps\ShippingRules\Model\Carrier\ContactStore;
@@ -16,7 +17,9 @@ use Tonyapps\ShippingRules\Model\RuleEvaluator;
  *
  * Runs after Shipping::collectRates (which already ran every carrier, including our own
  * ContactStore carrier). "hide" rules drop their targeted methods; a "contact_store" rule with
- * "hide others" enabled drops every real method so only the contact-store method survives.
+ * "hide others" enabled drops every real method so only the contact-store method survives, but only
+ * when that method really is in the result: with the carrier off or country-restricted, hiding the
+ * rest would leave the customer nothing to check out with.
  */
 readonly class HideMethodsPlugin
 {
@@ -47,7 +50,15 @@ readonly class HideMethodsPlugin
             return $result;
         }
 
-        [$hideAll, $hiddenCodes] = $this->resolveHidden($rules);
+        $hasContactStoreRate = false;
+        foreach ($allRates as $rate) {
+            if ($rate->getCarrier() === ContactStore::CODE && !$rate instanceof Error) {
+                $hasContactStoreRate = true;
+                break;
+            }
+        }
+
+        [$hideAll, $hiddenCodes] = $this->resolveHidden($rules, $hasContactStoreRate);
         if (!$hideAll && $hiddenCodes === []) {
             return $result;
         }
@@ -77,7 +88,7 @@ readonly class HideMethodsPlugin
      * @param Rule[] $rules
      * @return array{0: bool, 1: array<string, bool>} [$hideAll, $hiddenCodes]
      */
-    private function resolveHidden(array $rules): array
+    private function resolveHidden(array $rules, bool $hasContactStoreRate): array
     {
         $hideAll = false;
         $hiddenCodes = [];
@@ -95,7 +106,7 @@ readonly class HideMethodsPlugin
                 foreach ($targets as $code) {
                     $hiddenCodes[$code] = true;
                 }
-            } elseif ($action === RuleInterface::ACTION_CONTACT_STORE && $rule->getHideOthers()) {
+            } elseif ($action === RuleInterface::ACTION_CONTACT_STORE && $rule->getHideOthers() && $hasContactStoreRate) {
                 $hideAll = true;
             }
         }

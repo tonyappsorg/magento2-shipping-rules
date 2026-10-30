@@ -98,7 +98,7 @@ class RuleArrayConverterTest extends TestCase
             ->willReturnSelf();
         $conditions->expects(self::once())
             ->method('loadArray')
-            ->with(['type' => 'combine']);
+            ->with(self::validConditions());
 
         $rule = $this->createMock(Rule::class);
         $rule->method('getConditions')->willReturn($conditions);
@@ -130,8 +130,25 @@ class RuleArrayConverterTest extends TestCase
             RuleInterface::APPLIES_TO_METHODS => 'flatrate_flatrate, tablerate_bestway',
             RuleInterface::CUSTOMER_GROUP_IDS => '1,2',
             RuleInterface::STORE_IDS => [1],
-            RuleArrayConverter::CONDITIONS_KEY => ['type' => 'combine'],
+            RuleArrayConverter::CONDITIONS_KEY => self::validConditions(),
         ]);
+    }
+
+    private static function validConditions(): array
+    {
+        return [
+            'type' => \Magento\SalesRule\Model\Rule\Condition\Combine::class,
+            'aggregator' => 'all',
+            'value' => '1',
+            RuleArrayConverter::CONDITIONS_KEY => [
+                [
+                    'type' => \Magento\SalesRule\Model\Rule\Condition\Address::class,
+                    'attribute' => 'country_id',
+                    'operator' => '==',
+                    'value' => 'US',
+                ],
+            ],
+        ];
     }
 
     public static function invalidRules(): array
@@ -143,6 +160,19 @@ class RuleArrayConverterTest extends TestCase
             'impossible date' => [[RuleInterface::NAME => 'X', RuleInterface::TO_DATE => '2026-02-30']],
             'non-numeric group' => [[RuleInterface::NAME => 'X', RuleInterface::CUSTOMER_GROUP_IDS => '1,wholesale']],
             'unreadable conditions' => [[RuleInterface::NAME => 'X', RuleArrayConverter::CONDITIONS_KEY => 'not json']],
+            'unknown condition type' => [[RuleInterface::NAME => 'X', RuleArrayConverter::CONDITIONS_KEY => [
+                'type' => \Magento\SalesRule\Model\Rule\Condition\Combine::class,
+                RuleArrayConverter::CONDITIONS_KEY => [['type' => 'Vendor\\Typo\\Condition']],
+            ]]],
+            'non-condition class' => [[RuleInterface::NAME => 'X', RuleArrayConverter::CONDITIONS_KEY => [
+                'type' => \Magento\SalesRule\Model\Rule\Condition\Combine::class,
+                RuleArrayConverter::CONDITIONS_KEY => [['type' => \stdClass::class]],
+            ]]],
+            'unknown root type' => [[RuleInterface::NAME => 'X', RuleArrayConverter::CONDITIONS_KEY => ['type' => 'combine']]],
+            'child without type' => [[RuleInterface::NAME => 'X', RuleArrayConverter::CONDITIONS_KEY => [
+                'type' => \Magento\SalesRule\Model\Rule\Condition\Combine::class,
+                RuleArrayConverter::CONDITIONS_KEY => [['attribute' => 'country_id', 'value' => 'US']],
+            ]]],
         ];
     }
 

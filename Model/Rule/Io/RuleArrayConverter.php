@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Tonyapps\ShippingRules\Model\Rule\Io;
 
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Rule\Model\Condition\ConditionInterface;
 use Tonyapps\ShippingRules\Api\Data\RuleInterface;
 use Tonyapps\ShippingRules\Model\Rule;
 use Tonyapps\ShippingRules\Model\RuleFactory;
@@ -109,6 +110,40 @@ class RuleArrayConverter
         $conditions = $data[self::CONDITIONS_KEY] ?? null;
         if ($conditions !== null && $conditions !== '' && $conditions !== [] && !is_array($conditions)) {
             throw new LocalizedException(__('Rule "%1" has conditions that could not be read.', $name));
+        }
+        if (is_array($conditions)) {
+            $this->validateConditionTypes($conditions, $name);
+        }
+    }
+
+    /**
+     * Core Combine::loadArray() only logs a condition it can't build and carries on, so a typo would leave
+     * an empty condition that matches every cart. Check every node's type up front instead.
+     *
+     * @param array<string, mixed> $node
+     * @throws LocalizedException
+     */
+    private function validateConditionTypes(array $node, string $name): void
+    {
+        if (array_key_exists('type', $node)) {
+            $type = $node['type'];
+            if (!is_string($type) || !class_exists($type) || !is_subclass_of($type, ConditionInterface::class)) {
+                throw new LocalizedException(__(
+                    'Rule "%1" has an unknown condition type "%2".',
+                    $name,
+                    is_scalar($type) ? (string)$type : gettype($type)
+                ));
+            }
+        }
+        $children = $node[self::CONDITIONS_KEY] ?? [];
+        if (!is_array($children)) {
+            throw new LocalizedException(__('Rule "%1" has conditions that could not be read.', $name));
+        }
+        foreach ($children as $child) {
+            if (!is_array($child) || !array_key_exists('type', $child)) {
+                throw new LocalizedException(__('Rule "%1" has conditions that could not be read.', $name));
+            }
+            $this->validateConditionTypes($child, $name);
         }
     }
 

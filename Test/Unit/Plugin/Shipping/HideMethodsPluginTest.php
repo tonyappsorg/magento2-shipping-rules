@@ -5,6 +5,7 @@ namespace Tonyapps\ShippingRules\Test\Unit\Plugin\Shipping;
 
 use Magento\Framework\DataObject;
 use Magento\Quote\Model\Quote\Address\RateRequest;
+use Magento\Quote\Model\Quote\Address\RateResult\Error;
 use Magento\Shipping\Model\Rate\Result;
 use Magento\Shipping\Model\Shipping;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -85,6 +86,25 @@ class HideMethodsPluginTest extends TestCase
         $this->plugin->afterCollectRates($this->shipping, $this->shipping, $this->request);
 
         self::assertSame([$contact], $this->appended);
+    }
+
+    public function testContactStoreHideOthersKeepsEverythingWhenTheContactStoreRateIsMissing(): void
+    {
+        $this->givenRates([$this->rate('flatrate', 'flatrate'), $this->rate('tablerate', 'bestway')]);
+        $this->givenMatchingRules([$this->rule(RuleInterface::ACTION_CONTACT_STORE, [], true)]);
+        $this->rateResult->expects(self::never())->method('reset');
+
+        $this->plugin->afterCollectRates($this->shipping, $this->shipping, $this->request);
+    }
+
+    public function testContactStoreErrorDoesNotCountAsTheContactStoreRate(): void
+    {
+        $error = new Error(['carrier' => ContactStore::CODE, 'error_message' => 'Not available here']);
+        $this->givenRates([$this->rate('flatrate', 'flatrate'), $error]);
+        $this->givenMatchingRules([$this->rule(RuleInterface::ACTION_CONTACT_STORE, [], true)]);
+        $this->rateResult->expects(self::never())->method('reset');
+
+        $this->plugin->afterCollectRates($this->shipping, $this->shipping, $this->request);
     }
 
     /**

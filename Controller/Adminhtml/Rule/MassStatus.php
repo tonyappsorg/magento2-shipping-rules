@@ -37,12 +37,21 @@ class MassStatus extends AbstractRule implements HttpPostActionInterface
 
         /** @var \Tonyapps\ShippingRules\Model\Rule $rule */
         foreach ($collection as $rule) {
-            $rule->setData(RuleInterface::IS_ACTIVE, $isActive ? 1 : 0);
-            $this->ruleRepository->save($rule);
-            $updated++;
+            // One bad row shouldn't abort the rest of the batch with an error page.
+            try {
+                $rule->setData(RuleInterface::IS_ACTIVE, $isActive ? 1 : 0);
+                $this->ruleRepository->save($rule);
+                $updated++;
+            } catch (\Exception $e) {
+                $this->messageManager->addErrorMessage(
+                    __('Rule "%1" could not be updated: %2', $rule->getName(), $e->getMessage())
+                );
+            }
         }
 
-        $this->messageManager->addSuccessMessage(__('A total of %1 record(s) have been updated.', $updated));
+        if ($updated) {
+            $this->messageManager->addSuccessMessage(__('A total of %1 record(s) have been updated.', $updated));
+        }
 
         /** @var Redirect $resultRedirect */
         $resultRedirect = $this->resultRedirectFactory->create();

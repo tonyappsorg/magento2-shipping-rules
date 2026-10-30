@@ -10,6 +10,7 @@ use Tonyapps\ShippingRules\Api\Data\RuleInterface;
  *
  * List columns (methods/groups/stores) are comma-joined inside a quoted cell; the nested condition
  * tree cannot be flattened losslessly, so it is embedded as a JSON string in the "conditions" cell.
+ * escape: '' keeps it RFC 4180 (quotes doubled), so Excel and other tools read the JSON intact.
  */
 class CsvExporter
 {
@@ -39,7 +40,7 @@ class CsvExporter
     public function export(array $rules): string
     {
         $handle = fopen('php://temp', 'r+');
-        fputcsv($handle, self::HEADER, escape: '\\');
+        fputcsv($handle, self::HEADER, escape: '');
 
         foreach ($rules as $rule) {
             $row = $this->converter->toArray($rule);
@@ -59,7 +60,7 @@ class CsvExporter
                     (string)($row[RuleInterface::TO_DATE] ?? ''),
                     (string)json_encode($row[RuleArrayConverter::CONDITIONS_KEY], JSON_UNESCAPED_SLASHES),
                 ],
-                escape: '\\'
+                escape: ''
             );
         }
 

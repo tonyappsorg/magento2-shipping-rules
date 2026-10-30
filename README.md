@@ -39,4 +39,17 @@ a bad file imports nothing. Imports always create new rules.
 vendor/bin/phpunit -c dev/tests/unit/phpunit.xml.dist app/code/Tonyapps/ShippingRules/Test/Unit
 ```
 
-71 unit tests. `REVIEW.md` (Polish, 2026-09-21) is an earlier review; its test count predates later changes.
+72 unit tests. `REVIEW.md` (Polish, 2026-09-21) is an earlier review; its test count predates later changes.
+
+## Review fixes (2026-10-30)
+
+- **Import rejects unreadable conditions** instead of importing an empty tree that matches every cart: invalid
+  conditions JSON in a CSV cell, and any condition `type` that isn't a class implementing core's `ConditionInterface`
+  (core `Combine::loadArray()` would only log it), fail the whole file.
+- **CSV is RFC 4180** (`escape: ''`, quotes doubled), so a file saved by Excel keeps its conditions JSON intact.
+  Older exports written with `escape: '\\'` still import: when the RFC read fails, the importer retries the old way.
+- **"Hide others" only hides when the contact-store rate is really in the result.** With the carrier off or
+  country-restricted, the customer keeps the normal methods instead of having none.
+- **A malformed date on the edit form** returns to the form with an error instead of an error page.
+- **Mass delete / mass status** carry on past a failing row and report it.
+- `Magento_CatalogRule` is declared (composer and sequence): the conditions fieldset uses its `promo/fieldset.phtml`.

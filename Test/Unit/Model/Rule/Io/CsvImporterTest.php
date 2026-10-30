@@ -60,6 +60,43 @@ class CsvImporterTest extends TestCase
         self::assertCount(1, $this->importer->import($csv));
     }
 
+    public function testImportRejectsUnreadableConditionsJsonInsteadOfMatchingEveryCart(): void
+    {
+        $csv = implode(',', \Tonyapps\ShippingRules\Model\Rule\Io\CsvExporter::HEADER) . "\n"
+            . 'Embargo,,1,0,hide,,0,,,,,"{""type"":"';
+        $this->converter->expects(self::never())->method('fromArray');
+
+        $this->expectException(LocalizedException::class);
+        $this->importer->import($csv);
+    }
+
+    public function testImportReadsRfc4180QuotesInsideConditionsJson(): void
+    {
+        $conditions = ['type' => 'combine', 'value' => 'say "hi" \\'];
+        $csv = implode(',', \Tonyapps\ShippingRules\Model\Rule\Io\CsvExporter::HEADER) . "\n"
+            . 'Embargo,,1,0,hide,,0,,,,,"' . str_replace('"', '""', json_encode($conditions)) . '"';
+        $this->converter->expects(self::once())->method('fromArray')
+            ->with(self::callback(fn(array $data): bool => $data[RuleArrayConverter::CONDITIONS_KEY] === $conditions))
+            ->willReturn($this->createMock(Rule::class));
+
+        $this->importer->import($csv);
+    }
+
+    public function testImportStillReadsExportsWrittenWithBackslashEscape(): void
+    {
+        $conditions = ['type' => 'combine', 'value' => 'say "hi"'];
+        $handle = fopen('php://temp', 'r+');
+        fputcsv($handle, \Tonyapps\ShippingRules\Model\Rule\Io\CsvExporter::HEADER, escape: '\\');
+        fputcsv($handle, ['Embargo', '', '1', '0', 'hide', '', '0', '', '', '', '', json_encode($conditions)], escape: '\\');
+        rewind($handle);
+        $csv = stream_get_contents($handle);
+        $this->converter->expects(self::once())->method('fromArray')
+            ->with(self::callback(fn(array $data): bool => $data[RuleArrayConverter::CONDITIONS_KEY] === $conditions))
+            ->willReturn($this->createMock(Rule::class));
+
+        $this->importer->import($csv);
+    }
+
     public function testImportThrowsOnEmptyFile(): void
     {
         $this->expectException(LocalizedException::class);

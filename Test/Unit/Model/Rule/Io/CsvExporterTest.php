@@ -41,7 +41,7 @@ class CsvExporterTest extends TestCase
 
         $csv = $this->exporter->export([$rule]);
         $rows = array_map(
-            fn(string $line): array => str_getcsv($line, escape: '\\'),
+            fn(string $line): array => str_getcsv($line, escape: ''),
             explode("\n", trim(str_replace("\r\n", "\n", $csv)))
         );
 
@@ -65,11 +65,32 @@ class CsvExporterTest extends TestCase
         );
     }
 
+    public function testExportDoublesQuotesInsideJsonPerRfc4180(): void
+    {
+        $rule = $this->createMock(Rule::class);
+        $this->converter->method('toArray')->willReturn([
+            RuleInterface::NAME => 'Embargo',
+            RuleInterface::IS_ACTIVE => 1,
+            RuleInterface::SORT_ORDER => 0,
+            RuleInterface::ACTION => RuleInterface::ACTION_HIDE,
+            RuleInterface::APPLIES_TO_METHODS => [],
+            RuleInterface::HIDE_OTHERS => 0,
+            RuleInterface::CUSTOMER_GROUP_IDS => [],
+            RuleInterface::STORE_IDS => [],
+            RuleArrayConverter::CONDITIONS_KEY => ['value' => 'say "hi"'],
+        ]);
+
+        $csv = $this->exporter->export([$rule]);
+
+        // JSON {"value":"say \"hi\""}: every quote doubled, the \" is not left as a bare quote.
+        self::assertStringContainsString('"{""value"":""say \""hi\""""}"', $csv);
+    }
+
     public function testExportWithNoRulesWritesOnlyTheHeader(): void
     {
         $csv = $this->exporter->export([]);
 
-        self::assertSame(CsvExporter::HEADER, str_getcsv(trim($csv), escape: '\\'));
+        self::assertSame(CsvExporter::HEADER, str_getcsv(trim($csv), escape: ''));
     }
 
     public function testContentTypeAndFileName(): void

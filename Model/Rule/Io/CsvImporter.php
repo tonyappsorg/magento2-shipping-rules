@@ -17,13 +17,34 @@ readonly class CsvImporter
     ) {
     }
 
+    /**
+     * Reads RFC 4180 CSV (escape: ''). Exports made before 2026-10-30 used escape: '\\', which only differs
+     * when a cell holds \\" (e.g. a quote inside the conditions JSON); if the RFC read fails, retry that way.
+     */
     public function import(string $content): array
+    {
+        try {
+            return $this->parse($content, '');
+        } catch (LocalizedException $e) {
+            try {
+                return $this->parse($content, '\\');
+            } catch (LocalizedException) {
+                throw $e;
+            }
+        }
+    }
+
+    /**
+     * @return Rule[]
+     * @throws LocalizedException
+     */
+    private function parse(string $content, string $escape): array
     {
         $handle = fopen('php://temp', 'r+');
         fwrite($handle, $content);
         rewind($handle);
 
-        $header = fgetcsv($handle, escape: '\\');
+        $header = fgetcsv($handle, escape: $escape);
         if ($header === false || $header === null) {
             fclose($handle);
             throw new LocalizedException(__('The uploaded CSV file is empty.'));
@@ -37,7 +58,7 @@ readonly class CsvImporter
         ];
 
         $rules = [];
-        while (($row = fgetcsv($handle, escape: '\\')) !== false) {
+        while (($row = fgetcsv($handle, escape: $escape)) !== false) {
             if ($this->isBlankRow($row)) {
                 continue;
             }
@@ -77,6 +98,7 @@ readonly class CsvImporter
 
     /**
      * @return array<string, mixed>
+     * @throws LocalizedException on unreadable JSON: falling back to [] would make the rule match every cart
      */
     private function decodeConditions(string $value): array
     {
@@ -84,8 +106,15 @@ readonly class CsvImporter
             return [];
         }
 
-        $decoded = json_decode($value, true);
+        try {
+            $decoded = json_decode($value, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            throw new LocalizedException(__('A rule has conditions that are not valid JSON: %1', $e->getMessage()));
+        }
+        if (!is_array($decoded)) {
+            throw new LocalizedException(__('A rule has conditions that are not valid JSON.'));
+        }
 
-        return is_array($decoded) ? $decoded : [];
+        return $decoded;
     }
 }

@@ -67,11 +67,11 @@ class Save extends AbstractRule implements HttpPostActionInterface
         }
         unset($data['rule']);
 
-        $rule->loadPost($data);
-        unset($data['conditions']);
-        $rule->addData($data);
-
         try {
+            // loadPost turns the dates into \DateTime, which throws on a malformed one.
+            $rule->loadPost($data);
+            unset($data['conditions']);
+            $rule->addData($data);
             $this->ruleRepository->save($rule);
             $this->messageManager->addSuccessMessage(__('The shipping rule has been saved.'));
             $this->dataPersistor->clear(self::DATA_PERSISTOR_KEY);
