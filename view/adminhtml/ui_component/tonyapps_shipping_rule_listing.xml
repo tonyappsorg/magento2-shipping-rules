@@ -74,7 +74,7 @@
             <action name="disable">
                 <settings>
                     <url path="tonyapps_shippingrules/rule/massStatus">
-                        <param name="status" xsi:type="string">0</param>
+                        <param name="status">0</param>
                     </url>
                     <type>disable</type>
                     <label translate="true">Disable</label>
@@ -83,7 +83,7 @@
             <action name="enable">
                 <settings>
                     <url path="tonyapps_shippingrules/rule/massStatus">
-                        <param name="status" xsi:type="string">1</param>
+                        <param name="status">1</param>
                     </url>
                     <type>enable</type>
                     <label translate="true">Enable</label>
