@@ -1,55 +1,71 @@
-# Tonyapps_ShippingRules
+# Shipping Rules for Magento 2
 
-Hide shipping methods, or offer a "contact store for a quote" method, based on conditions about the cart.
+Hide shipping methods, or offer "contact us for a shipping quote", based on what is in the cart.
 
-## Use
+Magento Open Source shows every enabled shipping method that returns a rate, with no way to say "no express
+shipping for heavy items" or "bulky products need a quote". This module adds shipping rules built with the same
+condition builder as cart price rules. A rule can hide methods, or show a "contact store for a quote" method
+instead.
 
-**Stores > Shipping Rules** in the admin menu (ACL `Tonyapps_ShippingRules::rules`). Each rule has:
+## Features
+
+- **Hide shipping methods by condition**: hide chosen methods, or all of them, when the cart matches a rule.
+- **"Contact store for a quote" method**: offer a placeholder shipping method (your own title, name and displayed
+  price, usually 0) when a rule matches, optionally as the only choice.
+- **Familiar conditions**: use the cart price rule condition builder: subtotal, weight, destination, payment
+  method, and product attributes ("an item in the cart with material = Canvas").
+- **Scheduling and targeting**: limit rules to store views and customer groups, set from and to dates, sort order
+  and an active switch.
+- **Bulk management**: enable, disable or delete rules from the grid in one go.
+- **Import and export**: export rules as JSON or CSV (Excel-safe) and import them on another store. Every rule in
+  a file is checked first and the file is imported in one go, so a bad file changes nothing.
+- **Fail-safe**: a broken rule is logged and skipped, it never stops shipping rates from being calculated. If the
+  quote method can't be offered (for example the country isn't allowed), customers keep the normal methods
+  instead of seeing none.
+
+## How it works
+
+Create rules in **Stores > Shipping Rules**. Each rule has:
 
 | Field | Meaning |
 |---|---|
 | Action | **Hide selected shipping methods** (all of them when the list is empty), or **Show "Contact store"**, which shows the contact-store method and, with *Hide others*, removes every other method. |
-| Methods | Rate codes the rule applies to, e.g. `flatrate_flatrate`. |
-| Conditions | The cart price rule condition builder: subtotal, weight, destination, payment method, and product attributes ("an item in the cart with material = Canvas"). |
+| Methods | The shipping methods a *Hide* rule applies to, picked from a list of the store's methods. |
+| Conditions | The cart price rule condition builder. |
 | Scope | Store views, customer groups, from/to dates, sort order, active. |
 
-The contact-store method is a carrier configured under **Stores > Configuration > Sales > Delivery Methods >
-Contact Store for a Quote** (title, method name, displayed price, countries). It only appears when a
-`contact_store` rule matches.
+At checkout, the matching rules are applied to the shipping methods the customer sees, and the rules are checked
+again when the cart changes. The "contact store" method appears only when a matching rule asks for it.
 
-## Import / export
+## Good to know
 
-The grid exports the selected rules as JSON (default, keeps the condition tree as-is) or CSV (conditions as JSON in
-one cell). Import detects the format from the file extension. Every rule is validated first (name, action, dates
-as `YYYY-MM-DD`, numeric group and store IDs, readable conditions) and all rules are saved in one transaction, so
-a bad file imports nothing. Imports always create new rules.
+- Export downloads all rules; there is no export of only selected rules.
+- Imports always create new rules; they don't update existing ones.
+- The "contact store" method doesn't collect the request for you: the customer places the order with it, and you
+  follow up with the real shipping cost.
 
-## How it works
+## Requirements
 
-| Piece | What it does |
-|---|---|
-| `Model\RuleEvaluator` | Matches active rules against a rate request: scope, then the condition tree. Memoised per rate request, so the carrier and the plugin agree, and a recalculation after a cart change re-evaluates. A broken condition tree is logged and never breaks rate calculation. |
-| `Plugin\Shipping\HideMethodsPlugin` | After `Shipping::collectRates`, removes the methods matching rules hide. |
-| `Model\Carrier\ContactStore` | The contact-store pseudo-carrier. |
-| `Plugin\Quote\ProductAttributesPlugin` | Quote items only load the product attributes core asks for; this adds the ones active rules use, read with core's own cart-price-rule parser. Without it, product-attribute conditions never match. |
+- Magento Open Source 2.4 (developed on 2.4.8)
+- PHP 8.3 or 8.4
+- Magento modules: Backend, CatalogRule, Config, Customer, Directory, OfflineShipping, Quote, Rule, SalesRule,
+  Shipping, Store, Ui
 
-## Tests
+## Installation
 
 ```
-vendor/bin/phpunit -c dev/tests/unit/phpunit.xml.dist app/code/Tonyapps/ShippingRules/Test/Unit
+composer require tonyapps/module-shippingrules
+bin/magento module:enable Tonyapps_ShippingRules
+bin/magento setup:upgrade
 ```
 
-72 unit tests. `REVIEW.md` (Polish, 2026-09-21) is an earlier review; its test count predates later changes.
+## Configuration
 
-## Review fixes (2026-10-30)
+- **Stores > Shipping Rules**: rules grid, import and export.
+- **Stores > Configuration > Sales > Delivery Methods > Contact Store for a Quote (Shipping Rules)**: enabled,
+  title, method name, displayed price, sort order, countries.
+- **System > Permissions > User Roles**: *Stores > Shipping Rules* grants access.
 
-- **Import rejects unreadable conditions** instead of importing an empty tree that matches every cart: invalid
-  conditions JSON in a CSV cell, and any condition `type` that isn't a class implementing core's `ConditionInterface`
-  (core `Combine::loadArray()` would only log it), fail the whole file.
-- **CSV is RFC 4180** (`escape: ''`, quotes doubled), so a file saved by Excel keeps its conditions JSON intact.
-  Older exports written with `escape: '\\'` still import: when the RFC read fails, the importer retries the old way.
-- **"Hide others" only hides when the contact-store rate is really in the result.** With the carrier off or
-  country-restricted, the customer keeps the normal methods instead of having none.
-- **A malformed date on the edit form** returns to the form with an error instead of an error page.
-- **Mass delete / mass status** carry on past a failing row and report it.
-- `Magento_CatalogRule` is declared (composer and sequence): the conditions fieldset uses its `promo/fieldset.phtml`.
+## For developers
+
+Architecture, decisions, data model and tests are in [AGENTS.md](AGENTS.md).
